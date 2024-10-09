@@ -1,0 +1,23 @@
+@echo off
+echo Generating test files…
+
+REM Create small text files for basic comparison
+echo "This is a small test file." > small_file1.txt
+echo "Another small test file." > small_file2.txt
+
+REM Create large files (100MB)
+fsutil file createnew large_file1.txt 104857600
+fsutil file createnew large_file2.txt 104857600
+
+REM Create files with different extensions
+echo "This is a CSV file." > testfile1.csv
+echo "This is another CSV file." > testfile2.csv
+echo "This is a JSON file." > testfile1.json
+echo "This is another JSON file." > testfile2.json
+
+REM Create files with special characters in names
+echo "Special characters in this file!" > "file_with_@_special#_chars.txt"
+echo "Another file with special characters!" > "another_file_@_special#.txt"
+
+REM Log message
+echo Test files generated successfully.

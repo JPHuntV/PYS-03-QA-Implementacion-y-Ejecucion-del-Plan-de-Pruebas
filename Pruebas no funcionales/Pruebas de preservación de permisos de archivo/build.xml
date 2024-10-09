@@ -1,0 +1,33 @@
+<project name="permission-test" default="run" basedir=".">
+    <!-- loggear los permisos antes de correr las tareas -->
+    <target name="log-permissions-before">
+        <exec executable="powershell">
+            <arg value="Get-Acl 'src/archivo3.bat' | Format-List > before_permissions.txt" />
+        </exec>
+    </target>
+    <!-- tarea para arreglar los saltos de linea -->
+    <target name="fix-line-endings">
+        <fixcrlf srcdir="src" eol="crlf" includes="**/*.txt" />
+    </target>
+   
+    <!-- Tarea para reemplazar texto -->
+    <target name="replace-text">
+        <replace dir="src">
+            <replacefilter token="find-this" value="replace-with-this" />
+        </replace>
+    </target>
+    <!-- Tarea para reemplazar texto con expresion regular -->
+    <target name="replace-regexp">
+        <replaceregexp file="src/archivo3.bat" match="old-text" replace="new-text" />
+    </target>
+    <!-- Loggear los permisos despues de correr las tareas -->
+    <target name="log-permissions-after">
+        <exec executable="powershell">
+            <arg value="Get-Acl 'src/archivo3.bat' | Format-List > after_permissions.txt" />
+        </exec>
+    </target>
+    <!-- ejecutar las tareas -->
+    <target name="run" depends="log-permissions-before, fix-line-endings, replace-text, replace-regexp, log-permissions-after" />
+</project>
+
+

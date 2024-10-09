@@ -1,0 +1,33 @@
+<project name="ResourceCompareTest" basedir="." default="run">
+    <!-- configurar directorios -->
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="main-class" value="CompareResourceTest"/>
+   
+    <!-- Crear directorio build -->
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+    </target>
+    <!-- Compilar el programa Java -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.dir}" includeantruntime="true">
+            <!-- Incluir la librería de Ant -->
+            <classpath>
+                <pathelement location="${ant.home}/lib/ant.jar"/>
+            </classpath>
+        </javac>
+    </target>
+    <!-- ejecutar el programa Java -->
+    <target name="run" depends="compile">
+        <java classname="${main-class}" fork="true" dir="${build.dir}">
+            <classpath>
+                <pathelement path="${build.dir}"/>
+                <pathelement location="${ant.home}/lib/ant.jar"/>
+            </classpath>
+        </java>
+    </target>
+    <!-- Limpiar el directorio build -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+</project>
