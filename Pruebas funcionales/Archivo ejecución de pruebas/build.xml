@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Proyecto Ant llamado "AntJava18Test" con directorio base "." y target por defecto "run-all-tests" -->
+<project name="AntJava18Test" basedir="." default="run-all-tests">
+    <!-- Definición de propiedades -->
+    <!-- Directorio de los archivos fuente -->
+    <property name="src.dir" value="src"/>
+    <!-- Directorio donde se colocarán los archivos compilados -->
+    <property name="build.dir" value="build"/>
+    <!-- Directorio donde se almacenarán los reportes de pruebas -->
+    <property name="test.reports.dir" value="${basedir}/test-reports"/>
+    <!-- Directorio de salida para los resultados de JUnit -->
+    <property name="junit.output.dir" value="${test.reports.dir}/junit"/>
+    <!-- Ruta al JDK que se utilizará para la ejecución de pruebas (Java 22 en este caso) -->
+    <property name="java.home" value="C:\Program Files\Java\jdk-22"/>
+    <!-- Directorio de salida personalizado para JUnit -->
+    <property name="ant.junit.output.dir" value="C:/Users/Bayro/Downloads/hola/output"/>
+    <!-- Definición del classpath para las librerías de JUnit -->
+    <path id="junit.classpath">
+        <!-- Ruta a la librería standalone de JUnit -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\junit-platform-console-standalone-1.10.1.jar"/>
+        <!-- Ruta a la API de JUnit Jupiter -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\junit-jupiter-api-5.10.1.jar"/>
+        <!-- Ruta al motor de JUnit Jupiter -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\junit-jupiter-engine-5.10.1.jar"/>
+        <!-- Ruta a la plataforma de ejecución de JUnit -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\junit-platform-engine-1.10.1.jar"/>
+        <!-- Ruta a las utilidades comunes de la plataforma JUnit -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\junit-platform-commons-1.10.1.jar"/>
+        <!-- Ruta a la librería OpenTest4J para manejo de excepciones -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\opentest4j-1.3.0.jar"/>
+        <!-- Ruta al lanzador de JUnit -->
+        <pathelement location="C:\Users\Bayro\Downloads\hola\lib\junit-platform-launcher-1.10.1.jar"/>
+    </path>
+    <!-- Definición del classpath general que incluye el classpath de JUnit -->
+    <path id="classpath">
+        <!-- Agrega el directorio de compilación al classpath -->
+        <pathelement location="${build.dir}"/>
+        <!-- Referencia al classpath de JUnit -->
+        <path refid="junit.classpath"/>
+    </path>
+    <!-- Target "clean" para limpiar el directorio de compilación y reportes -->
+    <target name="clean">
+        <!-- Borra el directorio de compilación -->
+        <delete dir="${build.dir}"/>
+        <!-- Borra el directorio de reportes de pruebas -->
+        <delete dir="${test.reports.dir}"/>
+    </target>
+    <!-- Target "init" para crear los directorios necesarios antes de compilar -->
+    <target name="init">
+        <!-- Crea el directorio de compilación -->
+        <mkdir dir="${build.dir}"/>
+        <!-- Crea el directorio de reportes de pruebas -->
+        <mkdir dir="${test.reports.dir}"/>
+        <!-- Crea el directorio de salida de resultados de JUnit -->
+        <mkdir dir="${junit.output.dir}"/>
+    </target>
+    <!-- Target "compile" que depende de "init", para compilar los archivos fuente -->
+    <target name="compile" depends="init">
+        <!-- Tarea de compilación de Java -->
+        <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="classpath" includeantruntime="false" debug="true">
+            <!-- Argumento adicional para mostrar advertencias sobre tipos no verificados -->
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+    </target>
+    <!-- Target "test-system-exit" para ejecutar una clase que llama a System.exit() en un proceso separado -->
+    <target name="test-system-exit" depends="compile">
+        <!-- Ejecuta la clase SystemExitTest en un proceso separado (fork) -->
+        <java classname="com.example.SystemExitTest" fork="true">
+            <!-- Usa el classpath definido anteriormente -->
+            <classpath refid="classpath"/>
+            <!-- Establece el home de Java utilizado durante la ejecución -->
+            <jvmarg value="-Djava.home=${java.home}"/>
+        </java>
+    </target>
+    <!-- JUnit Launcher en modo fork con Java 18+ -->
+    <target name="test-junitlauncher-fork" depends="compile">
+        <!-- Define un target de Ant llamado "test-junitlauncher-fork-java18" que depende del target "compile".
+            Esto asegura que el código fuente esté compilado antes de ejecutar este target. -->
+        <junitlauncher haltonfailure="true" printSummary="true">
+            <!-- Inicia la ejecución de pruebas utilizando el task "junitlauncher".
+                - haltonfailure="true" indica que la ejecución se detendrá si alguna prueba falla.
+                - printSummary="true" muestra un resumen de la ejecución de las pruebas en la salida de la consola.-->
+            <classpath refid="classpath"/>
+            <!-- Define el classpath para las pruebas, referenciando el classpath definido en el proyecto. -->
+            <testclasses outputdir="${junit.output.dir}">
+                <!-- Configura las clases de prueba a ejecutar y el directorio donde se guardarán los resultados. -->
+                <fileset dir="${build.dir}" includes="**/*Test.class"/>
+                <!-- Busca todas las clases de prueba en el directorio de construcción (build.dir) que cumplen con el patrón **/*Test.class. -->
+                <fork>
+                    <!-- Indica que las pruebas se ejecutarán en un proceso separado. -->
+                    <jvmarg value="-Xmx512m"/>
+                    <!-- Establece la memoria máxima de la JVM en 512 MB para la ejecución de pruebas.-->
+                    <jvmarg value="-Djava.home=${java.home}"/>
+                    <!-- Establece la propiedad del sistema java.home, que apunta a la ubicación del JDK instalado. -->
+                    <jvmarg value="-ea"/>
+                    <!-- Habilita las aserciones en la JVM, lo que permite el uso de aserciones en las pruebas. -->
+                </fork>
+            </testclasses>
+            <listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+            <!-- Agrega un listener para generar resultados en formato XML,
+                enviando tanto la salida estándar (SysOut) como la salida de error (SysErr). -->
+            <listener type="legacy-plain" sendSysOut="true"/>
+            <!-- Agrega un listener adicional para generar resultados en un formato de texto plano,
+                también enviando la salida estándar (SysOut). -->
+        </junitlauncher>
+    </target>
+    <!-- JUnit Launcher con atributo Java -->
+    <target name="test-junitlauncher-java-attribute" depends="compile">
+        <!-- Define un target de Ant llamado "test-junitlauncher-java-attribute" que también depende del target "compile". -->
+        <junitlauncher haltonfailure="true" printSummary="true">
+            <!-- Inicia la ejecución de pruebas utilizando el task "junitlauncher" con un atributo de Java personalizado. -->
+            <classpath refid="classpath"/>
+            <!-- Define el classpath para las pruebas, referenciando el classpath definido en el proyecto. -->
+            <testclasses outputdir="${junit.output.dir}">
+                <!-- Configura las clases de prueba a ejecutar y el directorio donde se guardarán los resultados. -->
+                <fileset dir="${build.dir}" includes="**/*Test.class"/>
+                <!-- Busca todas las clases de prueba en el directorio de construcción (build.dir) que cumplen con el patrón **/*Test.class. -->
+                <fork java="${java.home}/bin/java">
+                <!-- Indica que las pruebas se ejecutarán utilizando un comando Java específico, apuntando a la ubicación del binario Java en el directorio del JDK. -->
+                    <jvmarg value="-Dant.junit.output.dir=${ant.junit.output.dir}"/>
+                <!-- Establece una propiedad del sistema que define el directorio de salida para los resultados de JUnit.-->
+                </fork>
+            </testclasses>
+            <listener type="legacy-xml" outputDir="${junit.output.dir}"/>
+            <!-- Agrega un listener para generar resultados en formato XML,
+                y especifica el directorio de salida para los resultados. -->
+        </junitlauncher>
+    </target>
+
+    <!-- Target comentado "test-junitlauncher-perTestClass" que ejecutaría pruebas por clase -->
+    <!--
+        <target name="test-junitlauncher-perTestClass" depends="compile">              
+            <junitlauncher forkMode="perTestClass" haltonfailure="true"printSummary="true">
+                <test name="com.example.MyTest"/>
+                <test name="com.example.OtherTest"/>
+            </junitlauncher>
+        </target>
+    -->
+
+    <!-- Target "test-junitlauncher-output-dir" para ejecutar pruebas y guardar reportes en un directorio de salida -->
+    <target name="test-junitlauncher-output-dir" depends="compile">
+        <!-- Ejecuta pruebas con JUnit -->
+        <junitlauncher haltonfailure="true" printSummary="true">
+            <!-- Usa el classpath definido -->
+            <classpath refid="classpath"/>
+            <!-- Directorio de salida de resultados -->
+            <testclasses outputdir="${junit.output.dir}">
+                <!-- Incluye todas las clases de prueba en el directorio de compilación -->
+                <fileset dir="${build.dir}" includes="**/*Test.class"/>
+            </testclasses>
+            <!-- Listener XML que guarda los resultados en el directorio de reportes -->
+            <listener type="legacy-xml" outputDir="${test.reports.dir}"/>
+        </junitlauncher>
+    </target>
+    <!-- Target principal "run-all-tests" que ejecuta todas las tareas en secuencia -->
+    <target name="run-all-tests" depends="clean, compile, test-system-exit, test-junitlauncher-fork, test-junitlauncher-java-attribute,test-junitlauncher-output-dir">
+        <!-- Mensaje de finalización -->
+        <echo message="All tests completed."/>
+    </target>
+</project>
