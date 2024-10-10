@@ -1,0 +1,1 @@
+para ejecutar el programa cree un directorio llamadado src/com/example/ dentro de example pegue todos los archivos de la carpeta de Archivos de prueba, además recordar cambiar la ubicacion de los archivos lib y el java
